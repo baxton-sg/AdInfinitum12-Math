@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
+#include <time.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -26,7 +29,7 @@ ostream& operator<< (ostream& os, const POLINOM& p) {
     return os;
 }
 
-double calc_poli(POLINOM& p, double x) {
+double calc_poli(const POLINOM& p, double x) {
     double res = p.coefs[0];
     double power = x;
 
@@ -42,6 +45,66 @@ double calc_poli(POLINOM& p, double x) {
     }
     
     return res;
+}
+
+
+double find_initial(const POLINOM& p) {
+    srand(time(NULL));
+
+    double left = 3.1415926;
+    double result = calc_poli(p, left);
+    
+    double right = ((double)rand() / RAND_MAX) * 2000000. - 1000000.;
+    double tmp = calc_poli(p, right);
+
+    double best = left;
+    double best_val = result;
+    if (fabs(result) > fabs(tmp)) {
+        best = right;
+        best_val = tmp;
+    }
+   
+    const int max_count = 1000; 
+    int count = 0;
+    while ((result > 0) == (tmp > 0) && count++ < max_count) {
+        right = ((double)rand() / RAND_MAX) * 2000000. - 1000000.;
+        tmp = calc_poli(p, right);
+
+        if (fabs(tmp) < fabs(best_val)) {
+            best = right;
+            best_val = tmp;
+        }
+    }
+
+    if (count >= max_count)
+        return best;
+
+    bool left_positive = result > 0;
+    bool right_positive = tmp > 0;
+
+
+    //
+    if (left > right) {
+       swap(left, right);
+       swap(left_positive, right_positive);
+    }
+
+    const double e = .001;
+
+    double mid;
+    while ((tmp > 0 ? tmp : -tmp) > e) {
+        mid = (right + left) / 2.;
+        tmp = calc_poli(p, mid);
+
+
+        if (left_positive == (tmp > 0))
+            left = mid;
+        else 
+            right = mid;
+        
+    }
+
+    return mid;
 }
 
 
@@ -73,8 +136,8 @@ void solve(POLINOM& p, int& sum, int& product) {
             break;
         }
         else {
-            double x0 = 400.;
-            double x1;
+            double x0 = find_initial(p);
+            double x1 = x0;
             double res = calc_poli(p, x0);
 
             while ((res < 0 ? -res : res) > e) {
