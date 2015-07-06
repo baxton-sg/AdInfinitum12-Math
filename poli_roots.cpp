@@ -53,8 +53,12 @@ double find_initial(const POLINOM& p) {
 
     double left = 3.1415926;
     double result = calc_poli(p, left);
+
+    double beg  = -1000000000.;
+    double range = 10000000.;
     
-    double right = ((double)rand() / RAND_MAX) * 2000000. - 1000000.;
+    double right = ((double)rand() / RAND_MAX) * range - beg;
+    beg += range;
     double tmp = calc_poli(p, right);
 
     double best = left;
@@ -64,10 +68,12 @@ double find_initial(const POLINOM& p) {
         best_val = tmp;
     }
    
-    const int max_count = 1000; 
+    const int max_count = 100; 
     int count = 0;
     while ((result > 0) == (tmp > 0) && count++ < max_count) {
-        right = ((double)rand() / RAND_MAX) * 2000000. - 1000000.;
+        right = ((double)rand() / RAND_MAX) * range - beg;
+        beg = beg + range;
+        beg = beg > (1000000000 - range) ? -1000000000 : beg;
         tmp = calc_poli(p, right);
 
         if (fabs(tmp) < fabs(best_val)) {
@@ -89,7 +95,7 @@ double find_initial(const POLINOM& p) {
        swap(left_positive, right_positive);
     }
 
-    const double e = .001;
+    const double e = 1;
 
     double mid;
     while ((tmp > 0 ? tmp : -tmp) > e) {
@@ -109,7 +115,7 @@ double find_initial(const POLINOM& p) {
 
 
 void solve(POLINOM& p, int& sum, int& product) {
-    const double e = 0.1;
+    const double e = 0.05;
 
     POLINOM dp;
     if (2 < p.pow) {
@@ -117,12 +123,15 @@ void solve(POLINOM& p, int& sum, int& product) {
         for (int i = 1; i <= p.pow; ++i)
             dp.coefs[i-1] = p.coefs[i] * i;
     }
-
+//int cnt = 0;
+//vector<int> roots;
     int root_number = p.pow;
 
     for (int r = 0; r < root_number; ++r) {
         if (1 == p.pow) {
             int root = -p.coefs[0] / p.coefs[1];
+//cout << "Root " << cnt++ << ": " << root << endl;
+//roots.push_back(root);
             sum += root;
             product *= root;
             break;
@@ -131,6 +140,10 @@ void solve(POLINOM& p, int& sum, int& product) {
             double d = sqrt(p.coefs[1] * p.coefs[1] - 4. * p.coefs[0] * p.coefs[2]);
             int root1 = (-p.coefs[1] + d) / (p.coefs[2] << 1);
             int root2 = (-p.coefs[1] - d) / (p.coefs[2] << 1);
+//cout << "Root^2 " << (cnt++) << ": " << root1 << endl
+//     << "Root^2 " << (cnt++) << ": " << root2 << endl;
+//roots.push_back(root1);
+//roots.push_back(root2);
             sum += root1 + root2;
             product *= root1 * root2;
             break;
@@ -147,6 +160,8 @@ void solve(POLINOM& p, int& sum, int& product) {
             }
           
             int root = (int)round(x1); 
+//cout << "Root " << cnt++ << ": " << root << endl;
+//roots.push_back(root);
             sum += root;
             product *= root;
 
@@ -161,6 +176,11 @@ void solve(POLINOM& p, int& sum, int& product) {
                 dp.coefs[i-1] = p.coefs[i] * i;
         }
     }
+
+//sort(roots.begin(), roots.end());
+//for (int i = 0; i < roots.size(); ++i)
+//    cout << roots[i] << ", ";
+//cout << endl;
 }
 
 
