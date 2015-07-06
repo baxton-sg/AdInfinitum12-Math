@@ -84,11 +84,18 @@ void solve(POLINOM& p, int& sum, int& product) {
             }
           
             int root = (int)round(x1); 
+            sum += root;
+            product *= root;
+
             p.coefs[0] /= -root; 
             for (int i = 1; i < p.pow; ++i) {
                 p.coefs[i] = (p.coefs[i] - p.coefs[i-1]) / (-root);
             }
             --p.pow;
+
+            dp.pow = p.pow - 1;
+            for (int i = 1; i <= p.pow; ++i)
+                dp.coefs[i-1] = p.coefs[i] * i;
         }
     }
 }
